@@ -3,6 +3,7 @@ package pl.asie.tweaks;
 import pl.asie.tweaks.applecore.AppleCoreTweaks;
 import pl.asie.tweaks.creative.CreativeTabManager;
 import pl.asie.tweaks.creative.CreativeTabMineTweaker;
+import pl.asie.tweaks.forestry.ForestryTweaks;
 import pl.asie.tweaks.override.FoodStatsNull;
 import pl.asie.tweaks.override.MapGenStrongholdNull;
 import pl.asie.tweaks.override.MapGenVillageNull;
@@ -28,6 +29,7 @@ import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.Event;
@@ -45,7 +47,7 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
-@Mod(modid = AsieTweaks.MODID, version = AsieTweaks.VERSION, dependencies = "after:AppleCore")
+@Mod(modid = AsieTweaks.MODID, version = AsieTweaks.VERSION, dependencies = "after:AppleCore;after:Forestry")
 public class AsieTweaks
 {
     public static final String MODID = "asietweaks";
@@ -115,6 +117,13 @@ public class AsieTweaks
         config.save();
 
         tabManager.loadConfig(configDir);
+    }
+
+    @EventHandler
+    public void init(FMLInitializationEvent event){
+        if(disableVillages && Loader.isModLoaded("Forestry")){
+            ForestryTweaks.INSTANCE.addMonasticRecipe();
+        }
     }
 
     @EventHandler
