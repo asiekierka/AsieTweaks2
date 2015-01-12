@@ -1,7 +1,8 @@
 package pl.asie.tweaks.creative;
 
-import net.minecraft.creativetab.*;
-import net.minecraft.item.*;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 public class CreativeTabCustom extends CreativeTabs
 {

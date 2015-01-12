@@ -1,9 +1,9 @@
 package pl.asie.tweaks.override;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.FoodStats;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.FoodStats;
 
 public class FoodStatsNull extends FoodStats {
 	@Override

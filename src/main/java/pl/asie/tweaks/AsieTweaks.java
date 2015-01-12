@@ -1,36 +1,6 @@
 package pl.asie.tweaks;
 
-import pl.asie.tweaks.applecore.AppleCoreTweaks;
-import pl.asie.tweaks.creative.CreativeTabManager;
-import pl.asie.tweaks.creative.CreativeTabMineTweaker;
-import pl.asie.tweaks.forestry.ForestryTweaks;
-import pl.asie.tweaks.override.FoodStatsNull;
-import pl.asie.tweaks.override.MapGenStrongholdNull;
-import pl.asie.tweaks.override.MapGenVillageNull;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import com.sun.org.apache.bcel.internal.generic.POP;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.passive.EntityChicken;
-import net.minecraft.entity.passive.EntityCow;
-import net.minecraft.entity.passive.EntityPig;
-import net.minecraft.entity.passive.EntitySheep;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraft.world.gen.structure.MapGenStronghold;
-import net.minecraft.world.gen.structure.MapGenVillage;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.IWorldGenerator;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -43,6 +13,19 @@ import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.passive.EntityChicken;
+import net.minecraft.entity.passive.EntityCow;
+import net.minecraft.entity.passive.EntityPig;
+import net.minecraft.entity.passive.EntitySheep;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.gen.structure.MapGenStronghold;
+import net.minecraft.world.gen.structure.MapGenVillage;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -51,8 +34,22 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.oredict.OreDictionary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import pl.asie.tweaks.applecore.AppleCoreTweaks;
+import pl.asie.tweaks.creative.CreativeTabManager;
+import pl.asie.tweaks.creative.CreativeTabMineTweaker;
+import pl.asie.tweaks.forestry.ForestryTweaks;
+import pl.asie.tweaks.override.FoodStatsNull;
+import pl.asie.tweaks.override.MapGenStrongholdNull;
+import pl.asie.tweaks.override.MapGenVillageNull;
+import pl.asie.tweaks.recipes.ItemRepairMineTweaker;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod(modid = AsieTweaks.MODID, version = AsieTweaks.VERSION, dependencies = "after:AppleCore;after:Forestry")
 public class AsieTweaks
@@ -161,6 +158,7 @@ public class AsieTweaks
 
         if (Loader.isModLoaded("MineTweaker3")) {
             CreativeTabMineTweaker.init();
+            ItemRepairMineTweaker.init();
         }
 
         if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
@@ -194,7 +192,9 @@ public class AsieTweaks
                         e.printStackTrace();
                     }
                     return;
-                } catch(NoSuchFieldException e) { }
+                } catch(NoSuchFieldException e) {
+                    //NOOP
+                }
             }
         }
     }
@@ -220,10 +220,10 @@ public class AsieTweaks
             return false;
         }
         if (mob instanceof EntityCow || mob instanceof EntityPig || mob instanceof EntitySheep
-                || mob instanceof EntityChicken) {
+                || mob instanceof EntityChicken || mob instanceof EntityPlayer) {
             return false;
         }
-        return (mob instanceof EntityLiving && !(mob instanceof EntityPlayer));
+        return (mob instanceof EntityLiving);
     }
 
     @SubscribeEvent
