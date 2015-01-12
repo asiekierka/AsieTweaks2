@@ -15,6 +15,7 @@ import java.util.List;
 import com.sun.org.apache.bcel.internal.generic.POP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.passive.EntityChicken;
@@ -22,6 +23,10 @@ import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.world.gen.structure.MapGenStronghold;
 import net.minecraft.world.gen.structure.MapGenVillage;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -36,6 +41,7 @@ import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -46,6 +52,7 @@ import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.oredict.OreDictionary;
 
 @Mod(modid = AsieTweaks.MODID, version = AsieTweaks.VERSION, dependencies = "after:AppleCore;after:Forestry")
 public class AsieTweaks
@@ -64,6 +71,9 @@ public class AsieTweaks
     private static boolean disableVillages = false;
     private static boolean disableEnd = false;
     private static boolean disableNether = false;
+    private static boolean addGraphite = false;
+
+    private static boolean fixDyes = false;
 
     private static final List<PopulateChunkEvent.Populate.EventType> disabledGenerators = new ArrayList<PopulateChunkEvent.Populate.EventType>();
 
@@ -88,7 +98,7 @@ public class AsieTweaks
             log.error("Could not create AsieTweaks config directory!");
         }
 
-        denyMobsIDontLike = config.getBoolean("denyMobsIDontLike", "general", false, "Stops mobs Asie does not like from existing, ever");
+        //denyMobsIDontLike = config.getBoolean("denyMobsIDontLike", "general", false, "Stops mobs Asie does not like from existing, ever");
         disableVillages = config.getBoolean("disableVillages", "world", false, "Stops villages from generating");
         disableStrongholds = config.getBoolean("disableStrongholds", "world", false, "Stops strongholds from generating");
         disableEnd = config.getBoolean("disableEnd", "world", false, "Disables The End. Implies disableStrongholds.");
@@ -96,6 +106,8 @@ public class AsieTweaks
         disableXp = config.getBoolean("disableXp", "general", false, "Disables experience points.");
         disableHunger = config.getBoolean("disableHunger", "general", false, "Disables hunger, keeping it at 50% and hiding it from rendering.");
         disableAchievements = config.getBoolean("disableAchievements", "client", false, "Disables achievements (popups only for now).");
+        addGraphite = config.getBoolean("addGraphite", "items", true, "Adds graphite (made of charcoal)");
+        //fixDyes = config.getBoolean("fixDyes", "recipes", true, "Fix dyes in recipes to use the Ore Dictionary.");
 
         for (PopulateChunkEvent.Populate.EventType type : PopulateChunkEvent.Populate.EventType.values()) {
             if (config.getBoolean(type.name(), "disabledWorldGenerators", false, "")) {
@@ -112,6 +124,13 @@ public class AsieTweaks
         }
         if (disableEnd) {
             disableStrongholds = true;
+        }
+
+        if (addGraphite) {
+            Item graphite = new Item().setCreativeTab(CreativeTabs.tabMaterials).setUnlocalizedName("graphite").setTextureName("asietweaks:graphite");
+            GameRegistry.registerItem(graphite, "graphite");
+            OreDictionary.registerOre("dyeBlack", graphite);
+            GameRegistry.addShapelessRecipe(new ItemStack(graphite, 2, 0), new ItemStack(Items.coal, 1, 1));
         }
 
         config.save();
@@ -153,6 +172,10 @@ public class AsieTweaks
 
         if (Loader.isModLoaded("AppleCore")) {
             AppleCoreTweaks.INSTANCE.postInit();
+        }
+
+        if (fixDyes) {
+            FixDyes.run();
         }
     }
 

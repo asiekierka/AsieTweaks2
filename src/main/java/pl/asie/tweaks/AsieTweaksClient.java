@@ -12,8 +12,8 @@ public class AsieTweaksClient {
 	@SubscribeEvent
 	public void overrideRendering(RenderGameOverlayEvent.Pre event) {
 		if (AsieTweaks.disableXp) {
-			GuiIngameForge.left_height = 33;
-			GuiIngameForge.right_height = 33;
+			GuiIngameForge.left_height = event.type == RenderGameOverlayEvent.ElementType.ARMOR ? 43 : 33;
+			GuiIngameForge.right_height = event.type == RenderGameOverlayEvent.ElementType.AIR ? 43 : 33;
 			if (event.type == RenderGameOverlayEvent.ElementType.EXPERIENCE) {
 				event.setCanceled(true);
 			}
