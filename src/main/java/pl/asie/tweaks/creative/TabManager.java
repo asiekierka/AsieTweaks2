@@ -3,6 +3,7 @@ package pl.asie.tweaks.creative;
 import pl.asie.tweaks.AsieTweaks;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,16 +36,16 @@ public class TabManager
         return this.nameToTab.get(name);
     }
     
-    private void addTabToList(final List<CreativeTabs> newList, final CreativeTabs tab, final boolean changeIndex) {
+    private void addTabToList(final List<CreativeTabs> newList, final CreativeTabs _tab, final boolean changeIndex) {
+        CreativeTabs tab = new CreativeTabWrapper(_tab, newList.size());
         newList.add(tab);
         if (changeIndex) {
             for (final Field f : CreativeTabs.class.getDeclaredFields()) {
                 if (f.getName().equals("tabIndex") || f.getName().equals("field_78033_n") || (f.getName().equals("n") && f.getGenericType().equals(Integer.TYPE))) {
                     f.setAccessible(true);
                     try {
-                        f.set(tab, newList.indexOf(tab));
-                    }
-                    catch (Exception e) {
+                        f.set(_tab, newList.indexOf(tab));
+                    } catch (Exception e) {
                         AsieTweaks.log.error("Failed setting tab position for tab " + tab.getTabLabel() + "!");
                         e.printStackTrace();
                     }
@@ -87,18 +88,49 @@ public class TabManager
                 }
             }
         }
-        if (!newList.contains(CreativeTabs.tabAllSearch)) {
+        if (newList.size() < 5) {
             while (newList.size() < 5) {
                 newList.add(null);
             }
             this.addTabToList(newList, CreativeTabs.tabAllSearch, false);
         }
-        if (!newList.contains(CreativeTabs.tabInventory)) {
+        if (newList.size() < 11) {
             while (newList.size() < 11) {
                 newList.add(null);
             }
             this.addTabToList(newList, CreativeTabs.tabInventory, false);
         }
+
+        // Override the tabAllSearch/etc. tabs with reflection
+        for (final Field f : CreativeTabs.class.getDeclaredFields()) {
+            if (f.getName().equals("tabAllSearch") || f.getName().equals("field_78027_g") || f.getName().equals("g") && CreativeTabs.class.isAssignableFrom(f.getType())) {
+                f.setAccessible(true);
+
+                try {
+                    Field modifiersField = Field.class.getDeclaredField("modifiers");
+                    modifiersField.setAccessible(true);
+                    modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+                    f.set(CreativeTabs.class, newList.get(5));
+                } catch (Exception e) {
+                    AsieTweaks.log.error("Failed setting tabAllSearch!");
+                    e.printStackTrace();
+                }
+            } else if (f.getName().equals("tabInventory") || f.getName().equals("field_78036_m") || f.getName().equals("m") && CreativeTabs.class.isAssignableFrom(f.getType())) {
+                f.setAccessible(true);
+
+                try {
+                    Field modifiersField = Field.class.getDeclaredField("modifiers");
+                    modifiersField.setAccessible(true);
+                    modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+                    f.set(CreativeTabs.class, newList.get(11));
+                } catch (Exception e) {
+                    AsieTweaks.log.error("Failed setting tabInventory!");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
         for (final CreativeTabs tab : CreativeTabs.creativeTabArray) {
             if (tab != null) {
                 this.nameToTabWithHidden.put(tab.getTabLabel(), tab);
