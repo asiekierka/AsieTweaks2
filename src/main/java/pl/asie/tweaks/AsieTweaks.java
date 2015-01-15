@@ -58,7 +58,7 @@ import net.minecraftforge.oredict.OreDictionary;
 public class AsieTweaks
 {
     public static final String MODID = "asietweaks";
-    public static final String VERSION = "0.0.1";
+    public static final String VERSION = "0.0.2";
 
     public static Logger log;
 
@@ -148,6 +148,7 @@ public class AsieTweaks
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.TERRAIN_GEN_BUS.register(this);
         FMLCommonHandler.instance().bus().register(this);
 
         if (disableEnd) {

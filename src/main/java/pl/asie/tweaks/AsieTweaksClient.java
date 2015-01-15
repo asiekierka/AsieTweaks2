@@ -29,14 +29,5 @@ public class AsieTweaksClient {
 		if (AsieTweaks.disableAchievements) {
 			Minecraft.getMinecraft().guiAchievement = new GuiAchievementHidden(Minecraft.getMinecraft());
 		}
-
-		for (CreativeTabs tab : CreativeTabs.creativeTabArray) {
-			if (tab == null) {
-				continue;
-			}
-			if (tab.getIconItemStack() == null || tab.getIconItemStack().getItem() == null) {
-				AsieTweaks.log.error("Tab " + tab.getTabLabel() + " has a null icon! This WILL crash Minecraft!");
-			}
-		}
 	}
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -33,12 +34,22 @@ public class CreativeTabWrapper extends CreativeTabs {
 
 	@Override
 	public ItemStack getIconItemStack() {
-		return original.getIconItemStack();
+		ItemStack stack = original.getIconItemStack();
+		if (stack == null || stack.getItem() == null) {
+			return new ItemStack(Blocks.air);
+		} else {
+			return stack;
+		}
 	}
 
 	@Override
 	public Item getTabIconItem() {
-		return original.getTabIconItem();
+		Item item = original.getTabIconItem();
+		if (item == null) {
+			return Item.getItemFromBlock(Blocks.air);
+		} else {
+			return item;
+		}
 	}
 
 	@Override
