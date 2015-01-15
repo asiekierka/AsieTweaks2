@@ -3,6 +3,7 @@ package pl.asie.tweaks.recipes;
 import cpw.mods.fml.common.registry.GameRegistry;
 import minetweaker.IUndoableAction;
 import minetweaker.MineTweakerAPI;
+import minetweaker.api.item.IIngredient;
 import minetweaker.api.item.IItemStack;
 import minetweaker.api.minecraft.MineTweakerMC;
 import net.minecraft.inventory.InventoryCrafting;
@@ -22,7 +23,7 @@ public class ItemRepairMineTweaker {
 	}
 
 	@ZenMethod
-	public static void addRepair(IItemStack repairable, IItemStack ingredient, double amount) {
+	public static void addRepair(IItemStack repairable, IIngredient ingredient, double amount) {
 		if(repairable == null || ingredient == null) {
 			MineTweakerAPI.logError("No input given for Repair recipe");
 			return;
@@ -37,11 +38,11 @@ public class ItemRepairMineTweaker {
 
 	public static class RepairRecipe implements IRecipe {
 		public final ItemStack repairable;
-		public final ItemStack ingredient;
+		public final IIngredient ingredient;
 		public final float amount;
 
-		public RepairRecipe(ItemStack repairable, ItemStack ingredient, double amount) {
-			this.repairable = repairable;
+		public RepairRecipe(IItemStack repairable, IIngredient ingredient, double amount) {
+			this.repairable = MineTweakerMC.getItemStack(repairable);
 			this.ingredient = ingredient;
 			this.amount = (float) Math.max(0, Math.min(1, amount));
 		}
@@ -55,12 +56,15 @@ public class ItemRepairMineTweaker {
 			for(int i = 0; i < 3; ++i) {
 				for(int j = 0; j < 3; ++j) {
 					ItemStack craftingstack = inventory.getStackInRowAndColumn(j, i);
-
 					if(craftingstack != null) {
-						if(craftingstack.getItem() == ingredient.getItem() && (ingredient.getItemDamage() == 32767 || craftingstack.getItemDamage() == ingredient.getItemDamage())) {
-							ingredientMatch = true;
-							continue;
-						} else if(craftingstack.getItem() == repairable.getItem() && (repairable.getItemDamage() == 32767 || craftingstack.getItemDamage() > 0)) {
+						{
+							IItemStack icraftingstack = MineTweakerMC.getIItemStackWildcardSize(craftingstack);
+							if(ingredient.matches(icraftingstack)) {
+								ingredientMatch = true;
+								continue;
+							}
+						}
+						if(craftingstack.getItem() == repairable.getItem() && (repairable.getItemDamage() == 32767 || craftingstack.getItemDamage() > 0)) {
 							if(repairableMatch) {
 								return false;
 							}
@@ -79,16 +83,22 @@ public class ItemRepairMineTweaker {
 
 		@Override
 		public ItemStack getCraftingResult(InventoryCrafting inventory) {
+
 			ItemStack output = null;
 			int ingredientAmount = 0;
 			for(int i = 0; i < 3; ++i) {
 				for(int j = 0; j < 3; ++j) {
 					ItemStack craftingstack = inventory.getStackInRowAndColumn(j, i);
 					if(craftingstack != null) {
+						{
+							IItemStack icraftingstack = MineTweakerMC.getIItemStackWildcardSize(craftingstack);
+							if(ingredient.matches(icraftingstack)) {
+								ingredientAmount++;
+								continue;
+							}
+						}
 						if(craftingstack.getItem() == repairable.getItem() && (repairable.getItemDamage() == 32767 || craftingstack.getItemDamage() > 0)) {
 							output = craftingstack.copy();
-						} else if(craftingstack.getItem() == ingredient.getItem() && (ingredient.getItemDamage() == 32767 || craftingstack.getItemDamage() == ingredient.getItemDamage())) {
-							ingredientAmount++;
 						}
 					}
 				}
@@ -125,13 +135,11 @@ public class ItemRepairMineTweaker {
 		private String ingredient;
 		private double amount;
 
-		public RepairAction(IItemStack repairable, IItemStack ingredient, double amount) {
+		public RepairAction(IItemStack repairable, IIngredient ingredient, double amount) {
 			this.repairable = repairable.getName();
-			this.ingredient = ingredient.getName();
+			this.ingredient = ingredient.getMark();
 			this.amount = amount;
-			ItemStack repairableItem = MineTweakerMC.getItemStack(repairable);
-			ItemStack ingredientItem = MineTweakerMC.getItemStack(ingredient);
-			this.recipe = new RepairRecipe(repairableItem, ingredientItem, amount);
+			this.recipe = new RepairRecipe(repairable, ingredient, amount);
 		}
 
 		@Override
