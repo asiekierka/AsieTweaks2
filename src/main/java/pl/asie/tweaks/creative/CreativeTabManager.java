@@ -1,10 +1,10 @@
 package pl.asie.tweaks.creative;
 
+import net.minecraftforge.common.config.Configuration;
 import pl.asie.tweaks.AsieTweaks;
 
 import java.io.File;
 import java.util.Random;
-import net.minecraftforge.common.config.Configuration;
 
 public class CreativeTabManager
 {

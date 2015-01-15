@@ -1,12 +1,10 @@
 package pl.asie.tweaks;
 
-import pl.asie.tweaks.override.GuiAchievementHidden;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.creativetab.CreativeTabs;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import pl.asie.tweaks.override.GuiAchievementHidden;
 
 public class AsieTweaksClient {
 	@SubscribeEvent
