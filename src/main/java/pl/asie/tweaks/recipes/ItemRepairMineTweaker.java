@@ -14,7 +14,6 @@ import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 @ZenClass("mods.asietweaks.Repair")
 public class ItemRepairMineTweaker {
@@ -24,7 +23,16 @@ public class ItemRepairMineTweaker {
 
 	@ZenMethod
 	public static void addRepair(IItemStack repairable, IItemStack ingredient, double amount) {
-		MineTweakerAPI.apply(new RepairAction(repairable, ingredient, amount));
+		if(repairable == null || ingredient == null) {
+			MineTweakerAPI.logError("No input given for Repair recipe");
+			return;
+		}
+		ItemStack repairableItem = MineTweakerMC.getItemStack(repairable);
+		if(!(repairableItem != null && repairableItem.getItem().isRepairable() && repairableItem.getMaxStackSize() == 1)) {
+			MineTweakerAPI.logError("No repairable input given for Repair recipe");
+		} else {
+			MineTweakerAPI.apply(new RepairAction(repairable, ingredient, amount));
+		}
 	}
 
 	public static class RepairRecipe implements IRecipe {
@@ -40,39 +48,56 @@ public class ItemRepairMineTweaker {
 
 		@Override
 		public boolean matches(InventoryCrafting inventory, World world) {
-			ArrayList<ItemStack> stacklist = new ArrayList<ItemStack>();
-			Collections.addAll(stacklist, repairable, ingredient);
+
+			boolean ingredientMatch = false;
+			boolean repairableMatch = false;
 
 			for(int i = 0; i < 3; ++i) {
 				for(int j = 0; j < 3; ++j) {
 					ItemStack craftingstack = inventory.getStackInRowAndColumn(j, i);
 
 					if(craftingstack != null) {
-						boolean flag = false;
-
-						for(ItemStack stack : stacklist) {
-
-							if(craftingstack.getItem() == stack.getItem() && (stack.getItemDamage() == 32767 || craftingstack.getItemDamage() == stack.getItemDamage())) {
-								flag = true;
-								stacklist.remove(stack);
-								break;
+						if(craftingstack.getItem() == ingredient.getItem() && (ingredient.getItemDamage() == 32767 || craftingstack.getItemDamage() == ingredient.getItemDamage())) {
+							ingredientMatch = true;
+							continue;
+						} else if(craftingstack.getItem() == repairable.getItem() && (repairable.getItemDamage() == 32767 || craftingstack.getItemDamage() > 0)) {
+							if(repairableMatch) {
+								return false;
 							}
+							repairableMatch = true;
+							continue;
 						}
-
-						if(!flag) {
-							return false;
-						}
+						return false;
 					}
 				}
+				if(ingredientMatch && repairableMatch) {
+					break;
+				}
 			}
-			return stacklist.isEmpty();
+			return ingredientMatch && repairableMatch;
 		}
 
 		@Override
 		public ItemStack getCraftingResult(InventoryCrafting inventory) {
-			ItemStack output = this.repairable.copy();
-			int canRepair = output.getMaxDamage() - output.getItemDamage();
-			int maxRepair = Math.round(output.getMaxDamage() * amount);
+			ItemStack output = null;
+			int ingredientAmount = 0;
+			for(int i = 0; i < 3; ++i) {
+				for(int j = 0; j < 3; ++j) {
+					ItemStack craftingstack = inventory.getStackInRowAndColumn(j, i);
+					if(craftingstack != null) {
+						if(craftingstack.getItem() == repairable.getItem() && (repairable.getItemDamage() == 32767 || craftingstack.getItemDamage() > 0)) {
+							output = craftingstack.copy();
+						} else if(craftingstack.getItem() == ingredient.getItem() && (ingredient.getItemDamage() == 32767 || craftingstack.getItemDamage() == ingredient.getItemDamage())) {
+							ingredientAmount++;
+						}
+					}
+				}
+			}
+			if(output == null) {
+				return null;
+			}
+			int canRepair = output.getItemDamage();
+			int maxRepair = Math.round(output.getMaxDamage() * ingredientAmount * amount);
 			if(canRepair > maxRepair) {
 				output.setItemDamage(output.getItemDamage() - maxRepair);
 			} else {
