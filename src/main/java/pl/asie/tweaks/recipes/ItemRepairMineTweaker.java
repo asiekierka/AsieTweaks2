@@ -6,6 +6,7 @@ import minetweaker.MineTweakerAPI;
 import minetweaker.api.item.IIngredient;
 import minetweaker.api.item.IItemStack;
 import minetweaker.api.minecraft.MineTweakerMC;
+import minetweaker.api.oredict.IOreDictEntry;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -137,7 +138,11 @@ public class ItemRepairMineTweaker {
 
 		public RepairAction(IItemStack repairable, IIngredient ingredient, double amount) {
 			this.repairable = repairable.getName();
-			this.ingredient = ingredient.getMark();
+			this.ingredient =
+				ingredient instanceof IOreDictEntry ? ((IOreDictEntry) ingredient).getName() :
+					ingredient instanceof IItemStack ? ((IItemStack) ingredient).getName() :
+						ingredient.getItems() != null && ingredient.getItems().size() > 0 ?
+							ingredient.getItems().get(0).getName() : ingredient.getMark();
 			this.amount = amount;
 			this.recipe = new RepairRecipe(repairable, ingredient, amount);
 		}
